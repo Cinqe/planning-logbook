@@ -16,12 +16,12 @@ SUPABASE_KEY = st.secrets.get(
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Custom header with reduced font size (e.g., 1.5rem instead of default huge st.title)
+# Scaled down further to fit nicely on a single line in mobile view
 st.markdown(
     """
-    <h2 style="margin-bottom: 0px; display: flex; align-items: center; gap: 10px;">
+    <h3 style="margin: 0px 0px 5px 0px; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
         📁 Planning Unit Logbook
-    </h2>
+    </h3>
 """,
     unsafe_allow_html=True,
 )
