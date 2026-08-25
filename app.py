@@ -65,25 +65,15 @@ def render_attachment_preview(attachment_url):
     separator = "&" if "?" in attachment_url else "?"
     force_download_url = f"{attachment_url}{separator}download={file_name}"
 
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-      st.markdown(
-          f"""
-                <a href="{force_download_url}" target="_blank" style="display:inline-block;padding:10px 16px;background-color:#5865F2;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
-                    🔍 Open / Read File
-                </a>
-                """,
-          unsafe_allow_html=True,
-      )
-    with col_btn2:
-      st.markdown(
-          f"""
-                <a href="{force_download_url}" style="display:inline-block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
-                    📥 Download File
-                </a>
-                """,
-          unsafe_allow_html=True,
-      )
+    # Single full-width download button
+    st.markdown(
+        f"""
+            <a href="{force_download_url}" style="display:block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
+                📥 Download File
+            </a>
+            """,
+        unsafe_allow_html=True,
+    )
 
 
 df = load_data()
@@ -131,7 +121,7 @@ else:
           unsafe_allow_html=True,
       )
 
-      # Expander to view details and use the attachment action buttons
+      # Expander to view details and use the attachment action button
       with st.expander("👁️ View Attachment / Details"):
         st.write(
             f"**Office/Destination:** {row.get('office_destination', 'N/A')}"
