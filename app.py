@@ -49,6 +49,9 @@ def render_attachment_preview(attachment_url):
   st.markdown("**📎 Document Attachment:**")
 
   clean_url = str(attachment_url).split("?")[0].lower()
+  file_name = os.path.basename(clean_url)
+  if not file_name:
+    file_name = "document.pdf"
 
   # 1. Image Previews (.jpg, .jpeg, .png, .webp, .gif)
   if clean_url.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")):
@@ -56,18 +59,17 @@ def render_attachment_preview(attachment_url):
 
   # 2. PDFs and Other Documents
   else:
-    file_name = os.path.basename(clean_url)
     st.markdown(f"📄 **File:** `{file_name}`")
 
-    # Append Supabase download parameter to force file download handling
+    # Append Supabase download parameter with filename to force proper file handling
     separator = "&" if "?" in attachment_url else "?"
-    force_download_url = f"{attachment_url}{separator}download="
+    force_download_url = f"{attachment_url}{separator}download={file_name}"
 
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
       st.markdown(
           f"""
-                <a href="{attachment_url}" target="_blank" style="display:inline-block;padding:10px 16px;background-color:#5865F2;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
+                <a href="{force_download_url}" target="_blank" style="display:inline-block;padding:10px 16px;background-color:#5865F2;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
                     🔍 Open / Read File
                 </a>
                 """,
