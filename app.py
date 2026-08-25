@@ -1,11 +1,15 @@
 import os
 import pandas as pd
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 from supabase import create_client
 
 st.set_page_config(
     page_title="Planning Unit Logbook", page_icon="📋", layout="centered"
 )
+
+# Automatically refresh and pull from Supabase every 10 seconds (10000 milliseconds)
+st_autorefresh(interval=10000, key="logbook_auto_refresher")
 
 # Initialize Supabase connection using Streamlit secrets (or direct strings for testing)
 SUPABASE_URL = st.secrets.get(
