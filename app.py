@@ -3,20 +3,28 @@ import streamlit as st
 from supabase import create_client
 
 st.set_page_config(
-    page_title="Planning Unit Logbook", page_icon="📂", layout="centered"
+    page_title="Planning Unit Logbook", page_icon="📁", layout="centered"
 )
 
 # Initialize Supabase connection using Streamlit secrets (or direct strings for testing)
 SUPABASE_URL = st.secrets.get(
     "SUPABASE_URL", "https://riinxzuilloipkoqlyvv.supabase.co"
-)  # or paste your URL string
+)
 SUPABASE_KEY = st.secrets.get(
     "SUPABASE_KEY", "sb_publishable_u7paOZQo5tEG3ICXY1yV7g_UB2ceW5e"
-)  # or paste your key string
+)
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-st.title("📂 Planning Unit Logbook")
+# Custom header with reduced font size (e.g., 1.5rem instead of default huge st.title)
+st.markdown(
+    """
+    <h2 style="margin-bottom: 0px; display: flex; align-items: center; gap: 10px;">
+        📁 Planning Unit Logbook
+    </h2>
+""",
+    unsafe_allow_html=True,
+)
 st.caption("Live Cloud Mobile Viewer")
 
 
@@ -58,7 +66,7 @@ else:
 
   # Render records in card containers
   for _, row in df.iterrows():
-    badge = "🟢 Received" if row["category"] == "Received" else "🔵 Released"
+    badge = "📥 Received" if row["category"] == "Received" else "📤 Released"
     with st.container():
       st.markdown(
           f"""
