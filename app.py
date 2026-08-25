@@ -76,6 +76,12 @@ def render_attachment_preview(attachment_url):
     )
 
 
+# Quick update control row
+col_top1, col_top2 = st.columns([3, 1])
+with col_top2:
+  if st.button("🔄 Check Updates"):
+    st.rerun()
+
 df = load_data()
 
 if df.empty:
