@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import streamlit as st
 from supabase import create_client
@@ -109,7 +110,7 @@ else:
 
   st.markdown(f"--- \n **Total Records Found: {len(df)}**")
 
-  # Render records in card containers with expander for previews
+  # Render records in card containers
   for _, row in df.iterrows():
     badge = "📥 Received" if row["category"] == "Received" else "📤 Released"
     with st.container():
@@ -126,7 +127,9 @@ else:
           unsafe_allow_html=True,
       )
 
-      # Expander to keep mobile layout clean while allowing quick attachment inspection
+      # Expander to view details and use the new attachment action buttons
       with st.expander("👁️ View Attachment / Details"):
-        st.write(f"**Office/Destination:** {row.get('office_destination', 'N/A')}")
+        st.write(
+            f"**Office/Destination:** {row.get('office_destination', 'N/A')}"
+        )
         render_attachment_preview(row.get("attachment_path"))
