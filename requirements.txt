@@ -4,3 +4,4 @@ websockets>=13.0,<16.0
 httpx>=0.23.0,<0.28.0
 pandas>=2.0.0
 streamlit-autorefresh
+streamlit-pdf-viewer
