@@ -59,9 +59,12 @@ def render_attachment_preview(attachment_url):
     file_name = os.path.basename(clean_url)
     st.markdown(f"📄 **File:** `{file_name}`")
 
+    # Append Supabase download parameter to force file download handling
+    separator = "&" if "?" in attachment_url else "?"
+    force_download_url = f"{attachment_url}{separator}download="
+
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
-      # Opens file safely in a new browser tab
       st.markdown(
           f"""
                 <a href="{attachment_url}" target="_blank" style="display:inline-block;padding:10px 16px;background-color:#5865F2;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
@@ -71,10 +74,9 @@ def render_attachment_preview(attachment_url):
           unsafe_allow_html=True,
       )
     with col_btn2:
-      # Forces download
       st.markdown(
           f"""
-                <a href="{attachment_url}" download style="display:inline-block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
+                <a href="{force_download_url}" style="display:inline-block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
                     📥 Download File
                 </a>
                 """,
@@ -127,7 +129,7 @@ else:
           unsafe_allow_html=True,
       )
 
-      # Expander to view details and use the new attachment action buttons
+      # Expander to view details and use the attachment action buttons
       with st.expander("👁️ View Attachment / Details"):
         st.write(
             f"**Office/Destination:** {row.get('office_destination', 'N/A')}"
