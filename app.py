@@ -1,7 +1,9 @@
 import os
 import pandas as pd
+import streamlit as str_lit
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
+from streamlit_pdf_viewer import pdf_viewer
 from supabase import create_client
 
 st.set_page_config(
@@ -50,7 +52,7 @@ def render_attachment_preview(attachment_url):
     return
 
   st.markdown("---")
-  st.markdown("**📎 Document Attachment:**")
+  st.markdown("**📎 Document Preview & Download:**")
 
   clean_url = str(attachment_url).split("?")[0].lower()
   file_name = os.path.basename(clean_url)
@@ -61,38 +63,38 @@ def render_attachment_preview(attachment_url):
   if clean_url.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")):
     st.image(attachment_url, caption="Attached Image", use_container_width=True)
 
-  # 2. PDFs and Other Documents
+  # 2. PDF Document Preview Component
+  elif clean_url.endswith(".pdf"):
+    st.markdown(f"📄 **File:** `{file_name}`")
+    try:
+      # Fetch the PDF bytes directly from the Supabase public URL
+      import urllib.request
+
+      with urllib.request.urlopen(attachment_url) as response:
+        pdf_bytes = response.read()
+
+      # Render actual visual pages of the PDF inside the app
+      pdf_viewer(input=pdf_bytes, width=700)
+    except Exception as e:
+      st.error(f"Could not load visual preview: {e}")
+
+  # 3. Other File Types (Fallback)
   else:
     st.markdown(f"📄 **File:** `{file_name}`")
 
-    # Force download parameter for the download button
-    separator = "&" if "?" in attachment_url else "?"
-    force_download_url = f"{attachment_url}{separator}download={file_name}"
+  # Force download parameter for the download button
+  separator = "&" if "?" in attachment_url else "?"
+  force_download_url = f"{attachment_url}{separator}download={file_name}"
 
-    # Side-by-side action buttons for Preview (New Tab) and Download
-    col_btn1, col_btn2 = st.columns(2)
-
-    with col_btn1:
-      # Opens the PDF in a new browser tab using standard URL
-      st.markdown(
-          f"""
-                <a href="{attachment_url}" target="_blank" style="display:block;padding:10px 16px;background-color:#5865F2;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
-                    🔍 Open / Read
-                </a>
-                """,
-          unsafe_allow_html=True,
-      )
-
-    with col_btn2:
-      # Forces direct file download
-      st.markdown(
-          f"""
-                <a href="{force_download_url}" style="display:block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
-                    📥 Download
-                </a>
-                """,
-          unsafe_allow_html=True,
-      )
+  # Clean download action button below preview
+  st.markdown(
+      f"""
+        <a href="{force_download_url}" style="display:block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;margin-top:10px;">
+            📥 Download File
+        </a>
+        """,
+      unsafe_allow_html=True,
+  )
 
 
 # Quick update control row
@@ -146,7 +148,7 @@ else:
           unsafe_allow_html=True,
       )
 
-      # Expander to view details and use the attachment action buttons
+      # Expander to view details and render actual visual PDF pages
       with st.expander("👁️ View Attachment / Details"):
         st.write(
             f"**Office/Destination:** {row.get('office_destination', 'N/A')}"
