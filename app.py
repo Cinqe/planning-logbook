@@ -45,38 +45,40 @@ def render_attachment_preview(attachment_url):
     return
 
   st.markdown("---")
-  st.markdown("**📎 Attachment Preview:**")
+  st.markdown("**📎 Document Attachment:**")
 
-  # Clean URL parameters if any exist from Supabase public URL
   clean_url = str(attachment_url).split("?")[0].lower()
 
   # 1. Image Previews (.jpg, .jpeg, .png, .webp, .gif)
   if clean_url.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")):
     st.image(attachment_url, caption="Attached Image", use_container_width=True)
 
-  # 2. PDF Document Previews (.pdf)
-  elif clean_url.endswith(".pdf"):
-    st.markdown(
-        f"**PDF Document Detected:** [Open in New Tab]({attachment_url})"
-    )
-    pdf_display = f'<iframe src="{attachment_url}" width="100%" height="500px" type="application/pdf"></iframe>'
-    st.markdown(pdf_display, unsafe_allow_html=True)
-
-  # 3. Audio Files (.mp3, .wav, .ogg)
-  elif clean_url.endswith((".mp3", ".wav", ".ogg")):
-    st.audio(attachment_url)
-
-  # 4. Video Files (.mp4, .mov, .webm)
-  elif clean_url.endswith((".mp4", ".mov", ".webm")):
-    st.video(attachment_url)
-
-  # 5. Other Files (Word documents, spreadsheets, etc.)
+  # 2. PDFs and Other Documents
   else:
-    st.warning("Direct inline preview is not supported for this file type.")
-    st.markdown(
-        f"📥 [Click here to download/view the file]({attachment_url})",
-        unsafe_allow_html=True,
-    )
+    file_name = os.path.basename(clean_url)
+    st.markdown(f"📄 **File:** `{file_name}`")
+
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+      # Opens file safely in a new browser tab
+      st.markdown(
+          f"""
+                <a href="{attachment_url}" target="_blank" style="display:inline-block;padding:10px 16px;background-color:#5865F2;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
+                    🔍 Open / Read File
+                </a>
+                """,
+          unsafe_allow_html=True,
+      )
+    with col_btn2:
+      # Forces download
+      st.markdown(
+          f"""
+                <a href="{attachment_url}" download style="display:inline-block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
+                    📥 Download File
+                </a>
+                """,
+          unsafe_allow_html=True,
+      )
 
 
 df = load_data()
