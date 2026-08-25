@@ -65,19 +65,34 @@ def render_attachment_preview(attachment_url):
   else:
     st.markdown(f"📄 **File:** `{file_name}`")
 
-    # Append Supabase download parameter with filename to force proper file handling
+    # Force download parameter for the download button
     separator = "&" if "?" in attachment_url else "?"
     force_download_url = f"{attachment_url}{separator}download={file_name}"
 
-    # Single full-width download button
-    st.markdown(
-        f"""
-            <a href="{force_download_url}" style="display:block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
-                📥 Download File
-            </a>
-            """,
-        unsafe_allow_html=True,
-    )
+    # Side-by-side action buttons for Preview (New Tab) and Download
+    col_btn1, col_btn2 = st.columns(2)
+
+    with col_btn1:
+      # Opens the PDF in a new browser tab using standard URL
+      st.markdown(
+          f"""
+                <a href="{attachment_url}" target="_blank" style="display:block;padding:10px 16px;background-color:#5865F2;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
+                    🔍 Open / Read
+                </a>
+                """,
+          unsafe_allow_html=True,
+      )
+
+    with col_btn2:
+      # Forces direct file download
+      st.markdown(
+          f"""
+                <a href="{force_download_url}" style="display:block;padding:10px 16px;background-color:#248046;color:white;text-align:center;font-weight:bold;text-decoration:none;border-radius:6px;width:100%;">
+                    📥 Download
+                </a>
+                """,
+          unsafe_allow_html=True,
+      )
 
 
 # Quick update control row
@@ -131,7 +146,7 @@ else:
           unsafe_allow_html=True,
       )
 
-      # Expander to view details and use the attachment action button
+      # Expander to view details and use the attachment action buttons
       with st.expander("👁️ View Attachment / Details"):
         st.write(
             f"**Office/Destination:** {row.get('office_destination', 'N/A')}"
