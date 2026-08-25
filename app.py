@@ -1,41 +1,34 @@
-from datetime import datetime
-import sqlite3
 import pandas as pd
 import streamlit as st
+from supabase import create_client
 
 st.set_page_config(
     page_title="Planning Unit Logbook", page_icon="📂", layout="centered"
 )
 
-# Custom CSS to mimic a clean desktop-like card padding and borders
-st.markdown(
-    """
-    <style>
-    .log-card {
-        background-color: #161b22;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #30363d;
-        margin-bottom: 10px;
-    }
-    </style>
-""",
-    unsafe_allow_html=True,
-)
+# Initialize Supabase connection using Streamlit secrets (or direct strings for testing)
+SUPABASE_URL = st.secrets.get(
+    "SUPABASE_URL", "https://riinxzuilloipkoqlyvv.supabase.co"
+)  # or paste your URL string
+SUPABASE_KEY = st.secrets.get(
+    "SUPABASE_KEY", "sb_publishable_u7paOZQo5tEG3ICXY1yV7g_UB2ceW5e"
+)  # or paste your key string
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 st.title("📂 Planning Unit Logbook")
-st.caption("Mobile Viewer Interface")
-
-# Connect to database and load fresh data without caching
-conn = sqlite3.connect("logbook.db")
+st.caption("Live Cloud Mobile Viewer")
 
 
+# Fetch data directly from Supabase cloud database
 def load_data():
-  return pd.read_sql_query("SELECT * FROM logs ORDER BY id DESC", conn)
+  response = (
+      supabase.table("logs").select("*").order("id", desc=True).execute()
+  )
+  return pd.DataFrame(response.data)
 
 
 df = load_data()
-conn.close()
 
 if df.empty:
   st.warning("No logs found in your database.")
@@ -74,7 +67,7 @@ else:
                 <h4 style="margin: 5px 0; color: #58a6ff;">{row['subject']}</h4>
                 <p style="margin: 2px 0; font-size: 0.9rem;"><b>Type:</b> {row['doc_type']} &nbsp;|&nbsp; <b>{badge}</b></p>
                 <p style="margin: 2px 0; font-size: 0.9rem;"><b>Sender/Destination:</b> {row['sender_or_destination']}</p>
-                {f'<p style="margin-top: 5px; font-size: 0.85rem; color: #8b949e;"><i>Remarks: {row["remarks"]}</i></p>' if row["remarks"] else ''}
+                {f'<p style="margin-top: 5px; font-size: 0.85rem; color: #8b949e;"><i>Remarks: {row["remarks"]}</i></p>' if row.get("remarks") else ''}
             </div>
             """,
           unsafe_allow_html=True,
