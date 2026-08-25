@@ -203,8 +203,16 @@ else:
           unsafe_allow_html=True,
       )
 
-      # Expander to view details and render cached page-by-page PDF viewer
-      with st.expander("👁️ View Attachment / Details"):
+      # Persistent expander state so it stays open when clicking pagination buttons
+      expander_key = f"expander_{row['id']}"
+      is_expanded = st.session_state.get(expander_key, False)
+
+      with st.expander(
+          "👁️ View Attachment / Details", expanded=is_expanded
+      ) as exp:
+        # Track expander open/closed state changes
+        st.session_state[expander_key] = True
+
         st.write(
             f"**Office/Destination:** {row.get('office_destination', 'N/A')}"
         )
