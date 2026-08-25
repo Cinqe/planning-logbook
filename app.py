@@ -1,4 +1,5 @@
 import os
+import fitz  # PyMuPDF
 import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
@@ -42,6 +43,19 @@ def load_data():
   return pd.DataFrame(response.data)
 
 
+# Cached function to download PDF bytes and count pages once per file URL
+@st.cache_data(show_spinner=False)
+def get_cached_pdf_data(attachment_url):
+  import urllib.request
+
+  with urllib.request.urlopen(attachment_url) as response:
+    pdf_bytes = response.read()
+
+  doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+  total_pages = len(doc)
+  return pdf_bytes, total_pages
+
+
 # ==========================================
 # ATTACHMENT PREVIEW COMPONENT FOR STREAMLIT
 # ==========================================
@@ -62,19 +76,12 @@ def render_attachment_preview(attachment_url, row_id):
   if clean_url.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")):
     st.image(attachment_url, caption="Attached Image", use_container_width=True)
 
-  # 2. PDF Document Preview with Page Navigation Controls
+  # 2. PDF Document Preview with Instant Cached Navigation
   elif clean_url.endswith(".pdf"):
     st.markdown(f"📄 **File:** `{file_name}`")
     try:
-      import fitz  # PyMuPDF to count total pages dynamically
-      import urllib.request
-
-      with urllib.request.urlopen(attachment_url) as response:
-        pdf_bytes = response.read()
-
-      # Open PDF with PyMuPDF to get total page count
-      doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-      total_pages = len(doc)
+      # Fetch cached bytes and total pages instantly without network overhead
+      pdf_bytes, total_pages = get_cached_pdf_data(attachment_url)
 
       # Initialize unique session state for this specific row's page tracker
       page_key = f"current_page_{row_id}"
@@ -89,7 +96,7 @@ def render_attachment_preview(attachment_url, row_id):
 
       current_page = st.session_state[page_key]
 
-      # Render only the single active page responsively
+      # Render active page responsively
       pdf_viewer(input=pdf_bytes, pages_to_render=[current_page])
 
       # Navigation control bar if there's more than 1 page
@@ -196,7 +203,7 @@ else:
           unsafe_allow_html=True,
       )
 
-      # Expander to view details and render page-by-page PDF viewer
+      # Expander to view details and render cached page-by-page PDF viewer
       with st.expander("👁️ View Attachment / Details"):
         st.write(
             f"**Office/Destination:** {row.get('office_destination', 'N/A')}"
