@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import streamlit as str_lit
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from streamlit_pdf_viewer import pdf_viewer
@@ -63,18 +62,17 @@ def render_attachment_preview(attachment_url):
   if clean_url.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")):
     st.image(attachment_url, caption="Attached Image", use_container_width=True)
 
-  # 2. PDF Document Preview Component
+  # 2. PDF Document Preview Component (Responsive Width)
   elif clean_url.endswith(".pdf"):
     st.markdown(f"📄 **File:** `{file_name}`")
     try:
-      # Fetch the PDF bytes directly from the Supabase public URL
       import urllib.request
 
       with urllib.request.urlopen(attachment_url) as response:
         pdf_bytes = response.read()
 
-      # Render actual visual pages of the PDF inside the app
-      pdf_viewer(input=pdf_bytes, width=700)
+      # Render actual visual pages of the PDF responsively inside mobile view
+      pdf_viewer(input=pdf_bytes)
     except Exception as e:
       st.error(f"Could not load visual preview: {e}")
 
