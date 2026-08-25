@@ -45,7 +45,7 @@ def load_data():
 # ==========================================
 # ATTACHMENT PREVIEW COMPONENT FOR STREAMLIT
 # ==========================================
-def render_attachment_preview(attachment_url):
+def render_attachment_preview(attachment_url, row_id):
   if not attachment_url or str(attachment_url).strip() == "":
     st.info("No attachment available for this entry.")
     return
@@ -62,17 +62,67 @@ def render_attachment_preview(attachment_url):
   if clean_url.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")):
     st.image(attachment_url, caption="Attached Image", use_container_width=True)
 
-  # 2. PDF Document Preview Component (Responsive Width)
+  # 2. PDF Document Preview with Page Navigation Controls
   elif clean_url.endswith(".pdf"):
     st.markdown(f"📄 **File:** `{file_name}`")
     try:
+      import fitz  # PyMuPDF to count total pages dynamically
       import urllib.request
 
       with urllib.request.urlopen(attachment_url) as response:
         pdf_bytes = response.read()
 
-      # Render actual visual pages of the PDF responsively inside mobile view
-      pdf_viewer(input=pdf_bytes)
+      # Open PDF with PyMuPDF to get total page count
+      doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+      total_pages = len(doc)
+
+      # Initialize unique session state for this specific row's page tracker
+      page_key = f"current_page_{row_id}"
+      if page_key not in st.session_state:
+        st.session_state[page_key] = 1
+
+      # Ensure page bounds are safe
+      if st.session_state[page_key] > total_pages:
+        st.session_state[page_key] = total_pages
+      if st.session_state[page_key] < 1:
+        st.session_state[page_key] = 1
+
+      current_page = st.session_state[page_key]
+
+      # Render only the single active page responsively
+      pdf_viewer(input=pdf_bytes, pages_to_render=[current_page])
+
+      # Navigation control bar if there's more than 1 page
+      if total_pages > 1:
+        st.markdown("")
+        nav_col1, nav_col2, nav_col3 = st.columns([1, 2, 1])
+
+        with nav_col1:
+          if st.button(
+              "◀ Prev",
+              key=f"prev_{row_id}",
+              disabled=(current_page <= 1),
+              use_container_width=True,
+          ):
+            st.session_state[page_key] -= 1
+            st.rerun()
+
+        with nav_col2:
+          st.markdown(
+              f"<p style='text-align:center; margin: 5px 0; font-size: 0.9rem;'>Page <b>{current_page}</b> of <b>{total_pages}</b></p>",
+              unsafe_allow_html=True,
+          )
+
+        with nav_col3:
+          if st.button(
+              "Next ▶",
+              key=f"next_{row_id}",
+              disabled=(current_page >= total_pages),
+              use_container_width=True,
+          ):
+            st.session_state[page_key] += 1
+            st.rerun()
+
     except Exception as e:
       st.error(f"Could not load visual preview: {e}")
 
@@ -146,9 +196,9 @@ else:
           unsafe_allow_html=True,
       )
 
-      # Expander to view details and render actual visual PDF pages
+      # Expander to view details and render page-by-page PDF viewer
       with st.expander("👁️ View Attachment / Details"):
         st.write(
             f"**Office/Destination:** {row.get('office_destination', 'N/A')}"
         )
-        render_attachment_preview(row.get("attachment_path"))
+        render_attachment_preview(row.get("attachment_path"), row["id"])
